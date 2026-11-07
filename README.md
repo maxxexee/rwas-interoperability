@@ -1,167 +1,322 @@
-# AttestRWA: Borrow against your real-world assets on any chain, proven, not bridged.
+<div align="center">
 
-> **BUIDL CTC 2026 Fall | RWA Track**
+<img src="docs/assets/banner.png" alt="AttestRWA: proof, not bridges" width="100%" />
 
-Prove real-world asset ownership occurred on Ethereum, using Attestcoin's decentralized attestor network, then let a Creditcoin contract trustlessly act on that proof, minting a transferable receipt token. No bridge, no custodian, no centralized oracle.
+<br />
+<br />
 
----
+<a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-2d5a27?style=flat-square&labelColor=1a1a1a" alt="License: MIT" /></a>
+<a href="foundry.toml"><img src="https://img.shields.io/badge/solidity-0.8.20-363636?style=flat-square&labelColor=1a1a1a" alt="Solidity 0.8.20" /></a>
+<a href="foundry.toml"><img src="https://img.shields.io/badge/built%20with-foundry-b8860b?style=flat-square&labelColor=1a1a1a" alt="Built with Foundry" /></a>
+<a href="https://sepolia.etherscan.io"><img src="https://img.shields.io/badge/source-ethereum%20sepolia-627eea?style=flat-square&labelColor=1a1a1a" alt="Source chain: Ethereum Sepolia" /></a>
+<a href="https://creditcoin-testnet.blockscout.com"><img src="https://img.shields.io/badge/destination-creditcoin%20cc3-2d5a27?style=flat-square&labelColor=1a1a1a" alt="Destination chain: Creditcoin CC3" /></a>
+<a href="https://rwas-interoperability-uvlw.onrender.com"><img src="https://img.shields.io/badge/demo-live-2d5a27?style=flat-square&labelColor=1a1a1a" alt="Live demo" /></a>
 
-## The Problem
+<br />
+<br />
 
-**Meet Mr. John.**
+**Borrow against real-world assets on another chain. Proven, not bridged.**
 
-Mr. John is a DeFi user who loves the concept of real estate tokenization. He's seen the hype, fractional property ownership, on-chain yields, the promise of liquid real-world assets. But he's scared of bridges. Several high-profile bridge hacks have made headlines, and he's not willing to lock his assets in a custodian that could be drained overnight.
+AttestRWA proves that a real-world asset ownership event happened on Ethereum, has a Creditcoin
+contract act on that proof, and mints a transferable receipt that can be used as loan collateral.
+No bridge, no custodian, no wrapped asset.
 
-He purchases a property on Ethereum via the AttestRWA platform, excited about the 8.2% yield and the idea of owning a piece of Manhattan. But soon, he finds himself short of liquidity. He doesn't want to sell his asset or liquidate his position. And even if he wanted to borrow against it, the bridging process is impossible, Ethereum and Creditcoin are different chains with no native way to talk to each other.
+</div>
 
-**Luckily for him, AttestRWA exists.**
+> [!WARNING]
+> Testnet demo built for BUIDL CTC 2026 Fall (RWA track). Not audited and not production ready.
+> The verifier contract is owner-gated, and two of its checks are recorded but not enforced.
+> Read [Limitations](#limitations) before you trust the happy path.
 
-AttestRWA allows blockchain interoperability between Ethereum and Creditcoin using Attestcoin's attestation mechanism. Instead of bridging his asset (which would expose it to bridge risk), the platform **proves** his Ethereum ownership to a Creditcoin smart contract using cryptographic attestations. His asset stays on Ethereum, only the proof moves.
+## Contents
 
-On Creditcoin, a VerifiedShare receipt is minted representing his verified claim. He can now borrow CUSD stablecoins against that receipt, his Ethereum asset never left Ethereum, and his liquidity need is solved. No bridge. No custodian. No trust assumption beyond mathematics.
+- [What it does](#what-it-does)
+- [Live demo](#live-demo)
+- [How it works](#how-it-works)
+- [Architecture](#architecture)
+- [Screens](#screens)
+- [Verification checks](#verification-checks)
+- [Deployed contracts](#deployed-contracts)
+- [Transactions](#transactions)
+- [Tech stack](#tech-stack)
+- [Repository layout](#repository-layout)
+- [Quickstart](#quickstart)
+- [Environment variables](#environment-variables)
+- [Scripts](#scripts)
+- [API](#api)
+- [Limitations](#limitations)
+- [Roadmap](#roadmap)
+- [Security](#security)
+- [Contributing](#contributing)
+- [License](#license)
 
-**This is what AttestRWA solves: cross-chain proof of ownership without cross-chain risk.**
+## What it does
 
----
+The demo deploys a mock ERC-721 on Ethereum Sepolia that represents fractional ownership of real
+estate, and a set of contracts on Creditcoin CC3. When someone buys a share, the purchase is
+proven cross-chain with Attestcoin, and `OwnershipVerifier` mints a `VerifiedShare` receipt on
+Creditcoin.
 
-## What This Project Does
+The receipt is not the asset. Ethereum stays the source of truth. The receipt is a timestamped,
+re-verifiable read of that truth, transferable on Creditcoin, and usable as collateral for CUSD.
 
-We deploy a **mock ERC-721** on Ethereum Sepolia representing fractional ownership of real-world properties. When someone purchases a share, that ownership event is **proven cross-chain** to Creditcoin using the Attestcoin Protocol. Our ASC verifies the proof and mints a **VerifiedShare receipt token** on Creditcoin, a transferable, re-verifiable claim to the Ethereum asset.
+The building blocks are intentionally small: one asset token, one receipt token, one verifier, one
+test stablecoin, and a Node API that drives the proof flow.
 
-**The receipt is NOT the original asset.** Ethereum remains the source of truth. The Creditcoin receipt is a live, re-verifiable read of that truth.
+## Live demo
 
-### One-Sentence Pitch
+[rwas-interoperability-uvlw.onrender.com](https://rwas-interoperability-uvlw.onrender.com)
 
-> "We prove that a real-world asset ownership event occurred on Ethereum, using Attestcoin's decentralized attestor network, then let a Creditcoin contract trustlessly act on that proof, minting a transferable receipt. No bridge, no custodian, no centralized oracle."
+No wallet, gas, or setup is required. Click **Try Live Demo** and the server runs the full loop
+against testnet: buy a share, wait for attestation, verify the proof, and mint the receipt. You can
+also open any property and buy a share with test USD.
 
----
-### Read the Full Story
- 
-I wrote a longer piece on why I built this, the biomimicry angle behind it, the bugs I found along the way, and where I think Attest could take interoperability next: [Tribalism is Hardcoded Into Existence: Interoperability](https://medium.com/@fwmaxx/tribalism-is-hardcoded-into-existence-interoperability-470fd8d8c7c0)
- 
----
-## Live Demo
+The Render free instance may take a minute to wake after a period of inactivity.
 
-**No wallet needed. No gas needed. No setup needed.**
+## How it works
 
-Open [rwas-interoperability-uvlw.onrender.com](https://rwas-interoperability-uvlw.onrender.com) in any browser, click **"Try Live Demo"** or click any property and hit **"Buy"**, the full flow executes server-side: buy → attest → verify → receipt minted.
+1. **Buy.** A buyer purchases a share of a property on Sepolia. `PretendAssetShare` mints an
+   ERC-721 and `USDToken` records the test payment.
+2. **Attest.** Attestcoin attestors observe Ethereum, reach consensus on the block, and produce a
+   Merkle inclusion proof plus a continuity proof.
+3. **Verify.** The proof is checked against Creditcoin's BlockProver precompile, then submitted to
+   the `OwnershipVerifier` ASC on Creditcoin.
+4. **Mint.** The ASC records the proof and calls `VerifiedShare.mint`, which creates a receipt that
+   points back to the source chain, block height, and transaction hash.
+5. **Borrow.** The receipt can be used as collateral for CUSD, a test stablecoin on Creditcoin.
 
----
+Ethereum remains the source of truth at every step. The receipt does not replace, transfer, or
+migrate the asset.
 
 ## Architecture
 
-```
-ETHEREUM SEPOLIA                          CREDITCOIN TESTNET
-┌──────────────────────────┐              ┌──────────────────────────────────┐
-│ PretendAssetShare (ERC721)│              │ BlockProver Precompile (0x0FD2)  │
-│ USDToken (ERC-20)         │              │ verify(merkle + continuity proof) │
-│ buyShare(tier) → mint     │              │         ▲                        │
-└───────────┬──────────────┘              │         │                        │
-            │ ownership event              │ OwnershipVerifier (ASC)         │
-            ▼                              │ ├─ 3-condition check            │
-┌──────────────────────────┐   proofs      │ ├─ replay guard                 │
-│ Attestcoin Attestors      │────────────▶ │ ├─ mint VerifiedShare receipt   │
-│ (distributed network)     │              │ └─ emit OwnershipVerified       │
-└──────────────────────────┘              │                                  │
-                                          │ VerifiedShare (ERC-721 receipt) │
-                                          │ CUSDToken (ERC-20 stablecoin)   │
-                                          └──────────────────────────────────┘
-```
-
-### Flow
-
-```
-1. User buys share on Ethereum → ERC-721 minted
-2. Attestcoin attestors observe Ethereum, reach consensus
-3. Proof posted to Creditcoin → BlockProver precompile verifies
-4. ASC checks 3 conditions → mints VerifiedShare receipt
-5. User borrows CUSD against receipt collateral
+```mermaid
+flowchart LR
+  subgraph ETH["Ethereum Sepolia"]
+    A["PretendAssetShare ERC-721<br/>buyShare(tier)"]
+    U["USDToken ERC-20"]
+  end
+  subgraph ATT["Attestcoin attestors"]
+    N["Observe the purchase<br/>reach consensus"]
+  end
+  subgraph CC["Creditcoin CC3"]
+    BP["BlockProver precompile<br/>0x0000...0FD2"]
+    V["OwnershipVerifier ASC<br/>replay guard"]
+    R["VerifiedShare ERC-721<br/>receipt"]
+    C["CUSDToken ERC-20"]
+  end
+  A -->|ownership event| N
+  N -->|Merkle and continuity proof| BP
+  BP --> V
+  V -->|mint| R
+  R -->|collateral| C
 ```
 
-**Ethereum remains the source of truth.** The Creditcoin receipt is a live, re-verifiable read of that truth, not a replacement, transfer, or migration of the asset.
+The ASC is the only contract that can mint receipts, and it is `onlyOwner`. The proof is checked
+with the precompile by the SDK before the owner submits the verification, which is the main
+trust assumption in the current design. See [Limitations](#limitations).
 
----
+## Screens
 
-## Multi-Layered Verification (7 Conditions Across 4 Layers)
+| Landing | Available properties |
+| :---: | :---: |
+| <img src="docs/assets/screen-hero.png" alt="AttestRWA landing page" width="100%" /> | <img src="docs/assets/screen-listings.png" alt="Property listings with six real estate assets" width="100%" /> |
 
-| Layer | Condition | What It Proves |
-|---|---|---|
-| 1. Cryptographic | Merkle Proof Validity | TX is included in the block's Merkle tree |
-| 1. Cryptographic | Continuity Proof | Block is part of a valid, unbroken chain |
-| 1. Cryptographic | Chain Key Validation | Correct source chain (Sepolia = 1) |
-| 2. Precompile | BlockProver Verification | Proof validated by chain-level consensus |
-| 2. Precompile | Source TX Success | Ethereum TX actually succeeded (status=1) |
-| 3. ASC | 3-Condition Check | owned + mintTimeValid + fromApprovedMinter |
-| 4. Replay Guard | Query Deduplication | Same proof cannot be used twice |
+<p align="center">
+  <img src="docs/assets/screen-detail.png" alt="Property detail page with share tiers and purchase panel" width="78%" />
+</p>
 
-**This exceeds the hackathon requirement of "at least one condition beyond a single flag check."**
+Screenshots are from the live site on testnet, using the sample properties and test balances.
 
----
+## Verification checks
 
-## Deployed Contracts
+The flow has several checks, but they are not enforced in the same place. This table is the
+per-check view.
+
+| Layer | Check | Enforced by |
+| --- | --- | --- |
+| Cryptographic | Merkle inclusion | BlockProver precompile, queried by the SDK before submission |
+| Cryptographic | Continuity | BlockProver precompile, queried by the SDK before submission |
+| Cryptographic | Source chain key (Sepolia = 1) | Passed by the SDK and stored by the ASC |
+| Precompile | Source transaction succeeded | ASC reverts with `SourceTxFailed` |
+| ASC | Replay guard | `processedQueries` mapping, reverts on reuse |
+| ASC | Wallet owns the asset | Recorded as true by the owner call, not read from the proof |
+| ASC | Mint time window | Computed and stored, not enforced |
+| ASC | Approved minter | Computed and stored, not enforced |
+
+The demo goes deeper than a single flag check, but the on-chain gate is still thinner than the
+architecture diagram suggests. That is the first thing to fix, not a detail to bury.
+
+## Deployed contracts
 
 | Contract | Chain | Address |
-|---|---|---|
-| PretendAssetShare (ERC-721) | Ethereum Sepolia | `0xaDc10fb365d504214Ae54F929C8aC837E84B2fED` |
-| USDToken (ERC-20) | Ethereum Sepolia | `0xc2F8871ef47377E84A93dBEE1506AA42826399e3` |
-| OwnershipVerifier (ASC) | Creditcoin Testnet | `0xb67671950f7dF3a950272A6a16F0E350EC9C10af` |
-| VerifiedShare (Receipt) | Creditcoin Testnet | `0xaDc10fb365d504214Ae54F929C8aC837E84B2fED` |
-| CUSDToken (Stablecoin) | Creditcoin Testnet | `0x000bb049eC7B8E4DFA179928Dd5eA8F54B421FB7` |
+| --- | --- | --- |
+| PretendAssetShare (ERC-721) | Ethereum Sepolia | [`0xaDc10fb365d504214Ae54F929C8aC837E84B2fED`](https://sepolia.etherscan.io/address/0xaDc10fb365d504214Ae54F929C8aC837E84B2fED) |
+| USDToken (ERC-20) | Ethereum Sepolia | [`0xc2F8871ef47377E84A93dBEE1506AA42826399e3`](https://sepolia.etherscan.io/address/0xc2F8871ef47377E84A93dBEE1506AA42826399e3) |
+| OwnershipVerifier (ASC) | Creditcoin CC3 | [`0xb67671950f7dF3a950272A6a16F0E350EC9C10af`](https://creditcoin-testnet.blockscout.com/address/0xb67671950f7dF3a950272A6a16F0E350EC9C10af) |
+| VerifiedShare (receipt) | Creditcoin CC3 | [`0xaDc10fb365d504214Ae54F929C8aC837E84B2fED`](https://creditcoin-testnet.blockscout.com/address/0xaDc10fb365d504214Ae54F929C8aC837E84B2fED) |
+| CUSDToken (test stablecoin) | Creditcoin CC3 | [`0x000bb049eC7B8E4DFA179928Dd5eA8F54B421FB7`](https://creditcoin-testnet.blockscout.com/address/0x000bb049eC7B8E4DFA179928Dd5eA8F54B421FB7) |
 
-| Transaction | Chain | Hash |
-|---|---|---|
-| Asset Mint (10%) | Sepolia | `0xd5ce04f7a1ffc4db3b5e8fe5db1f39eb97a7243e8af36e3f63a3eca3afe4ef93` |
-| Proof Verified + Receipt | Creditcoin | `0xe825787f8eb5c59082cdedffbc7edb4cc5c0d901180db35b9d96ae1655304a21` |
-| Pacific Heights Purchase | Sepolia | `0x9c06c4c1b23e036dbb7187cc7db76df512928d16a080d321f7a3cda179295027` |
-| Verification (Token #3) | Creditcoin | `0x5886a912...` |
+## Transactions
 
----
+| Event | Chain | Transaction |
+| --- | --- | --- |
+| Asset mint, 10 percent share | Sepolia | [`0xd5ce04f7a1ffc4db3b5e8fe5db1f39eb97a7243e8af36e3f63a3eca3afe4ef93`](https://sepolia.etherscan.io/tx/0xd5ce04f7a1ffc4db3b5e8fe5db1f39eb97a7243e8af36e3f63a3eca3afe4ef93) |
+| Proof verified and receipt minted | Creditcoin | [`0xe825787f8eb5c59082cdedffbc7edb4cc5c0d901180db35b9d96ae1655304a21`](https://creditcoin-testnet.blockscout.com/tx/0xe825787f8eb5c59082cdedffbc7edb4cc5c0d901180db35b9d96ae1655304a21) |
+| Pacific Heights purchase | Sepolia | [`0x9c06c4c1b23e036dbb7187cc7db76df512928d16a080d321f7a3cda179295027`](https://sepolia.etherscan.io/tx/0x9c06c4c1b23e036dbb7187cc7db76df512928d16a080d321f7a3cda179295027) |
 
-## Tech Stack
+## Tech stack
 
 | Component | Technology |
-|---|---|
-| Source Chain | Solidity 0.8.20, ERC-721, Sepolia |
-| Destination Chain | Solidity, Creditcoin CC3 Testnet |
-| Attestcoin SDK | `@gluwa/usc-sdk` (ProofBuilder, PrecompileBlockProver) |
-| Block Prover | Native precompile at `0x0000...0FD2` |
-| Backend | Node.js + Express + TypeScript |
-| Frontend | Vanilla HTML/CSS/JS, ethers.js v6, DM Sans |
-| Hosting | Render (auto-deploy from GitHub) |
-| Build Tools | Foundry, npm, tsx |
+| --- | --- |
+| Source chain | Solidity 0.8.20, ERC-721, Ethereum Sepolia |
+| Destination chain | Solidity, Creditcoin CC3 testnet |
+| Proof SDK | `@gluwa/usc-sdk` (ProofBuilder, PrecompileBlockProver) |
+| Block prover | Native precompile at `0x0000...0FD2` |
+| Backend | Node.js, Express, TypeScript |
+| Frontend | Vanilla HTML, CSS, and JS in one file, ethers.js v6, DM Sans |
+| Hosting | Render, auto-deploy from GitHub |
+| Tooling | Foundry, npm, tsx, TypeScript |
 
+## Repository layout
 
----
+```text
+contracts/                  Sepolia asset and USD token, ASC, receipt, CUSD
+server/index.ts             Express API, proof flow, demo endpoints
+frontend/index.html         Single-file product UI, no build step
+scripts/                    Deployments, proof submission, end-to-end flows
+docs/assets/                Banner, social preview, screenshots
+docs/brand.html             Source for the banner and social preview
+foundry.toml                Solidity build configuration
+render.yaml                 Render deployment configuration
+scripts/check-repo.mjs      Repository checks used by CI
+.github/workflows/check.yml Typecheck, contract build, and repo checks
+```
 
-## Why Safer Than Bridges/Oracles
+## Quickstart
 
-| Bridge Risk | Attestcoin Proof |
-|---|---|
-| Asset locked in bridge | Asset stays on Ethereum |
-| Bridge holds custody | No custody, only proof |
-| Bridge hack = asset safe | Hack = invalid proof (asset safe) |
-| Single point of failure | Distributed attestors |
-| Centralized relayer | Decentralized consensus |
-| Smart contract bridge | Native precompile verification |
+Requirements: Node.js 20 or newer, npm, and Foundry for the contracts.
 
----
-## What I'd Build Next (Proposed Extension)
- 
-Right now the sync only goes one way: Ethereum to Creditcoin. If John sells or transfers his property share on Ethereum, we can re-run the attestation and flag his VerifiedShare receipt as stale, that part works today. But if John repays or transfers the receipt itself on Creditcoin, there's no way for that to reach back and touch the original asset on Ethereum. That's not a bug I missed, it's a hard boundary of what Attestcoin currently supports. Writability, meaning Creditcoin contracts triggering real state changes on Ethereum, is still in development on their roadmap, not live yet.
- 
-The moment it ships, here's exactly what I'd wire up:
- 
-**Bidirectional settlement.** Right now `releaseCollateral()` only updates state on Creditcoin. Once writability exists, repaying a loan on Creditcoin should be able to fire a verified instruction back to Ethereum, unlocking or transferring the original asset directly, not just flipping a flag on our side. That closes the loop instead of leaving it as a one-way mirror.
- 
-**Multi-chain source support.** The whole verification pipeline, Merkle proof, continuity proof, chain key check, replay guard, isn't Ethereum-specific in principle. `chainKey` is already a parameter in the proof, not a hardcoded constant. The moment Attestcoin adds a new source chain, `OwnershipVerifier` should be able to accept proofs from it with zero changes to the core verification logic, just a new allowlisted chain key. That's the whole point of building the check around a chain key parameter instead of assuming Sepolia everywhere.
- 
-**Batch verification for real portfolios.** Attestcoin supports batch queries sharing one continuity proof, up to 10 at a time. Right now I verify one asset at a time because that's all the demo needed. A real version of this should let someone prove ownership of an entire basket of assets across multiple source transactions in a single call, one continuity proof, multiple Merkle proofs, one mint transaction on Creditcoin instead of one per asset.
- 
-**Enforce the conditions I'm already computing.** I'll be straight about this one: `mintTimeValid` and `fromApprovedMinter` are computed and stored in the current contract, but nothing reverts if they come back false. That's fine for a hackathon demo where every path is a happy path, but it's the first thing I'd lock down, add the `require()` so the multi-condition check is actually a gate, not just a record.
- 
-None of this needs a new idea. It's the same proof-first pattern, prove it once, use it anywhere, just extended in the three directions the protocol itself is already headed: writable, multi-chain, and batched. I'm not trying to build a better bridge. I'm trying to make bridges unnecessary for this entire category of asset.
+```bash
+git clone https://github.com/maxxexee/rwas-interoperability.git
+cd rwas-interoperability
+npm ci
+cp .env.example .env
+# fill DEPLOYER_PRIVATE_KEY and the RPC URLs
+npm run dev
+```
 
- ---
+Open http://localhost:3000. The same Express process serves the API and the frontend.
+
+Contracts:
+
+```bash
+forge install foundry-rs/forge-std --no-git
+forge build
+```
+
+`lib/` is gitignored, so a clean clone needs the `forge install` step before `forge build`.
+
+To deploy your own copies, fill the contract addresses in `.env` and run:
+
+```bash
+npm run deploy
+```
+
+Use a testnet-only wallet. The deployer key signs purchases, verifier calls, and CUSD mints.
+
+## Environment variables
+
+| Variable | Used by | Notes |
+| --- | --- | --- |
+| `DEPLOYER_PRIVATE_KEY` | Server, deploy scripts | Testnet-only wallet. Signs Sepolia and Creditcoin transactions |
+| `SEPOLIA_RPC_URL` | Server, deploy scripts | Ethereum Sepolia RPC |
+| `CREDITCOIN_RPC_URL` | Server, deploy scripts | Creditcoin CC3 RPC |
+| `CREDITCOIN_PROOF_BUILDER_URL` | Server, scripts | Attestcoin proof generation service |
+| `SEPOLIA_ASSET_CONTRACT` | Server | `PretendAssetShare` address |
+| `SEPOLIA_USD_TOKEN` | Server | Test USD address |
+| `SEPOLIA_CUSD_TOKEN` | Server | Test CUSD address |
+| `CREDITCOIN_ASC_CONTRACT` | Server | `OwnershipVerifier` address |
+| `CREDITCOIN_RECEIPT_TOKEN` | Server | `VerifiedShare` address |
+| `PORT` | Server | Optional, defaults to 3000 |
+
+## Scripts
+
+| Command | What it does |
+| --- | --- |
+| `npm run dev` | Runs the API and frontend with tsx watch |
+| `npm run build` | Typechecks and compiles the server to `dist/` |
+| `npm start` | Runs the compiled server |
+| `npm run deploy` | Deploys the contract set with `scripts/deploy_all.ts` |
+| `npm run test:proof` | Runs the end-to-end proof flow in `scripts/full_proof_flow_v2.ts` |
+| `npx tsx scripts/deploy_sepolia.ts` | Deploys only the Sepolia contracts |
+| `npx tsx scripts/deploy_creditcoin.ts` | Deploys only the Creditcoin contracts |
+| `npx tsx scripts/submit_proof_sdk.ts` | Builds a proof with the SDK and submits it to the ASC |
+| `npx tsx scripts/verify_purchase.ts` | Verifies a purchase and prints the resulting state |
+
+## API
+
+| Method | Route | Purpose |
+| --- | --- | --- |
+| GET | `/api/health` | Health check |
+| GET | `/api/config` | Contract addresses exposed to the frontend |
+| GET | `/api/property` | Property metadata and tier data from the contract |
+| GET | `/api/usd-balance/:wallet` | Test USD balance |
+| POST | `/api/faucet` | Mints test USD to a wallet |
+| POST | `/api/buy` | Approves payment and buys a share |
+| GET | `/api/attestation-status/:txHash` | Attestation progress for a source transaction |
+| GET | `/api/proof/:txHash` | Builds a proof through the Attestcoin SDK |
+| POST | `/api/prove-and-mint` | Verifies the proof and mints the receipt |
+| GET | `/api/state/:wallet/:assetId` | Verification state for one asset |
+| GET | `/api/my-assets/:wallet` | Purchased assets with verification status |
+| POST | `/api/borrow` | Mints CUSD against a valid receipt |
+| GET | `/api/demo/status` | Status of the one-click demo |
+| POST | `/api/demo/buy` | Demo purchase step |
+| POST | `/api/demo/verify` | Demo verification and mint step |
+
+## Limitations
+
+These are the honest edges of the current build.
+
+1. **Verification is owner-gated.** `verifyAndMintReceipt` is `onlyOwner`, and `owned` is hardcoded
+   to `true`. The precompile proof is checked by the SDK before the owner submits, so the contract
+   records a result rather than re-verifying the proof itself.
+2. **Two checks are advisory.** `mintTimeValid` and `fromApprovedMinter` are computed, stored, and
+   emitted, but nothing reverts when they are false.
+3. **Sync is one-way.** Ethereum to Creditcoin works. Creditcoin to Ethereum requires Attestcoin
+   writability, which is not live.
+4. **Staleness is manual.** A receipt is only flagged stale when someone calls `resyncOwnership`
+   with fresh proof data. Nothing watches Ethereum continuously.
+5. **The assets and money are fixtures.** The ERC-721, USD token, CUSD token, and property metadata
+   are demo data. `purchases.json` is a convenience index, not a source of truth.
+6. **The server holds a hot key.** `DEPLOYER_PRIVATE_KEY` signs on both chains. Anyone with the
+   Render environment can move test funds and submit verifications.
+7. **There is no test suite for the proof path.** `test/Counter.t.sol` is the Foundry template. CI
+   typechecks the server, builds the contracts, and runs repository checks, but does not exercise a
+   real proof.
+8. **Testnet and unaudited.** Do not reuse this with real funds or real assets.
+
+## Roadmap
+
+- **Enforce the checks.** Add `require()` gates for `mintTimeValid` and `fromApprovedMinter`, and
+  move proof verification into the contract or a verifier role instead of trusting the submitter.
+- **Bidirectional settlement.** Once Attestcoin writability ships, repaying a loan on Creditcoin
+  should send a verified instruction back to Ethereum and release the asset there.
+- **Multi-chain sources.** `chainKey` is already a parameter rather than a Sepolia constant, so a
+  new allowlisted chain should not need new verification logic.
+- **Batch verification.** Attestcoin supports batch queries that share one continuity proof. A
+  portfolio should prove several assets in one call instead of one transaction per asset.
+
+## Security
+
+Read [SECURITY.md](SECURITY.md). Report vulnerabilities through the repository Security tab, not
+a public issue. The demo is on testnet and is not audited.
+
+## Contributing
+
+Read [CONTRIBUTING.md](CONTRIBUTING.md). The limitations and roadmap above are the highest value
+work. Run `node scripts/check-repo.mjs` before opening a pull request; CI runs the same check.
+
 ## License
 
-MIT
+MIT, see [LICENSE](LICENSE).

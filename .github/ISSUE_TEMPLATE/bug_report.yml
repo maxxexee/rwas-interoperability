@@ -1,0 +1,72 @@
+name: Bug report
+description: Something in the app, API, contracts, or proof flow behaves incorrectly
+title: "bug: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Do not paste private keys, .env contents, or RPC URLs with API keys.
+        For security issues, use the Security tab instead of a public issue.
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: What you expected, and what happened instead.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Open the property page
+        2. Select a share tier
+        3. ...
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Frontend
+        - API and server
+        - Contracts
+        - Proof flow
+        - Deployment
+        - Documentation
+    validations:
+      required: true
+  - type: dropdown
+    id: network
+    attributes:
+      label: Network
+      options:
+        - Ethereum Sepolia
+        - Creditcoin CC3
+        - Local
+        - Not sure
+    validations:
+      required: true
+  - type: input
+    id: transaction
+    attributes:
+      label: Transaction hash
+      description: Required for on-chain issues, optional otherwise.
+      placeholder: "0x..."
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs or screenshots
+      description: Server output, browser console, or screenshots. Remove secrets first.
+      render: shell
+  - type: checkboxes
+    id: confirm
+    attributes:
+      label: Checks
+      options:
+        - label: I removed secrets from logs and screenshots
+          required: true
+        - label: I searched existing issues
+          required: true

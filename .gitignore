@@ -6,3 +6,7 @@ lib/
 *.log
 .DS_Store
 dist/
+
+# Local env files
+.env.*
+!.env.example

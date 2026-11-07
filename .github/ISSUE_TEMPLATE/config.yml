@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security report
+    url: https://github.com/maxxexee/rwas-interoperability/security/advisories/new
+    about: Report a vulnerability privately. Do not open a public issue.
+  - name: Live demo
+    url: https://rwas-interoperability-uvlw.onrender.com
+    about: Try the flow before filing a bug.

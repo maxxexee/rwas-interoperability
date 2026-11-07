@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>AttestRWA brand plate</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg: #f8f7f4;
+    --card: #ffffff;
+    --ink: #1a1a1a;
+    --muted: #8a8580;
+    --border: #e8e6e1;
+    --green: #2d5a27;
+    --green-soft: #e8f0e6;
+    --gold: #b8860b;
+    --gold-soft: #fdf6e3;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    overflow: hidden;
+  }
+  .grid {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(45, 90, 39, .055) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(45, 90, 39, .055) 1px, transparent 1px);
+    background-size: 36px 36px;
+    -webkit-mask-image: radial-gradient(105% 120% at 18% 40%, #000 20%, transparent 78%);
+    mask-image: radial-gradient(105% 120% at 18% 40%, #000 20%, transparent 78%);
+  }
+  .wrap {
+    position: relative;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    gap: 4vw;
+    padding: 0 clamp(44px, 6vw, 84px);
+  }
+  .left { flex: 1; min-width: 0; }
+  .brandrow { display: flex; align-items: center; gap: 12px; }
+  .mark {
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    background: var(--green);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .mark svg { width: 17px; height: 17px; stroke: #fff; fill: none; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+  .wordmark { font-size: 21px; font-weight: 700; letter-spacing: -.02em; }
+  .wordmark span { color: var(--green); }
+  .track {
+    margin-left: 6px;
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: .14em;
+    color: var(--green);
+    background: var(--green-soft);
+    border: 1px solid rgba(45, 90, 39, .18);
+    padding: 4px 9px;
+    border-radius: 100px;
+    white-space: nowrap;
+  }
+  h1 {
+    font-size: 64px;
+    font-weight: 700;
+    letter-spacing: -.045em;
+    line-height: 1.02;
+    margin: 26px 0 18px;
+  }
+  h1 em { font-style: normal; color: var(--green); }
+  .sub {
+    max-width: 540px;
+    font-size: 17px;
+    line-height: 1.6;
+    color: var(--muted);
+  }
+  .sub strong { color: var(--ink); font-weight: 600; }
+  .steps {
+    display: flex;
+    gap: 22px;
+    margin-top: 26px;
+    padding-top: 18px;
+    border-top: 1px solid var(--border);
+    max-width: 540px;
+  }
+  .steps span { font-size: 10px; font-weight: 600; letter-spacing: .1em; color: var(--muted); text-transform: uppercase; }
+  .steps b { color: var(--green); margin-right: 5px; }
+  .right { flex: 0 0 auto; }
+  .proof { display: flex; align-items: center; gap: 0; }
+  .chain {
+    width: 186px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 16px 16px 14px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, .04);
+  }
+  .chain.dest { border-color: rgba(45, 90, 39, .28); box-shadow: 0 10px 30px rgba(45, 90, 39, .08); }
+  .chain-label { font-size: 8px; font-weight: 600; letter-spacing: .14em; color: var(--muted); text-transform: uppercase; }
+  .chain-name { font-size: 14px; font-weight: 600; margin: 6px 0 10px; letter-spacing: -.01em; }
+  .chain-item { font-size: 10px; color: var(--muted); line-height: 1.9; }
+  .chain-item i { display: inline-block; width: 4px; height: 4px; border-radius: 50%; background: var(--green); margin-right: 7px; vertical-align: 2px; }
+  .chain-foot {
+    margin-top: 10px;
+    padding-top: 9px;
+    border-top: 1px solid var(--border);
+    font-size: 9px;
+    font-weight: 600;
+    color: var(--green);
+  }
+  .link { position: relative; width: 132px; height: 1px; background: rgba(45, 90, 39, .3); margin: 0 12px; }
+  .link::after {
+    content: '';
+    position: absolute;
+    right: 0;
+    top: -3px;
+    width: 7px;
+    height: 7px;
+    border-top: 1px solid var(--green);
+    border-right: 1px solid var(--green);
+    transform: rotate(45deg);
+  }
+  .link span {
+    position: absolute;
+    top: -26px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: transparent;
+    padding: 0;
+    font-size: 8px;
+    font-weight: 600;
+    letter-spacing: .12em;
+    color: var(--green);
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+  .checks { display: flex; gap: 6px; margin-top: 14px; justify-content: center; flex-wrap: wrap; }
+  .checks span {
+    font-size: 8.5px;
+    font-weight: 600;
+    letter-spacing: .04em;
+    color: var(--muted);
+    background: var(--card);
+    border: 1px solid var(--border);
+    padding: 5px 9px;
+    border-radius: 100px;
+  }
+  .receipt {
+    margin-top: 14px;
+    background: var(--gold-soft);
+    border: 1px solid rgba(184, 134, 11, .22);
+    border-radius: 10px;
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+  }
+  .receipt b { font-size: 9px; letter-spacing: .1em; color: var(--gold); text-transform: uppercase; }
+  .receipt span { font-size: 10px; color: var(--muted); }
+  @media (min-height: 560px) {
+    h1 { font-size: 88px; margin: 34px 0 22px; }
+    .sub { font-size: 19px; }
+    .brandrow { gap: 14px; }
+    .mark { width: 36px; height: 36px; }
+    .mark svg { width: 20px; height: 20px; }
+    .wordmark { font-size: 24px; }
+    .chain { width: 206px; padding: 18px; }
+    .link { width: 156px; margin: 0 14px; }
+  }
+</style>
+</head>
+<body>
+  <div class="grid"></div>
+  <div class="wrap">
+    <div class="left">
+      <div class="brandrow">
+        <span class="mark">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.6 20 6v6.1c0 4.6-3.2 8.2-8 9.3-4.8-1.1-8-4.7-8-9.3V6l8-3.4Z"/><path d="m8.6 12.1 2.4 2.4 4.4-4.6"/></svg>
+        </span>
+        <span class="wordmark">Attest<span>RWA</span></span>
+        <span class="track">BUIDL CTC 2026 FALL</span>
+      </div>
+      <h1>Proof, <em>not bridges.</em></h1>
+      <p class="sub">Real-world asset ownership recorded on Ethereum, proven to a Creditcoin contract by the Attestcoin attestor network. The asset never leaves Ethereum. Only the proof moves.</p>
+      <div class="steps">
+        <span><b>01</b>Buy</span><span><b>02</b>Attest</span><span><b>03</b>Verify</span><span><b>04</b>Borrow</span>
+      </div>
+    </div>
+    <div class="right">
+      <div class="proof">
+        <div class="chain">
+          <div class="chain-label">Source chain</div>
+          <div class="chain-name">Ethereum Sepolia</div>
+          <div class="chain-item"><i></i> ERC-721 share minted</div>
+          <div class="chain-item"><i></i> Ownership event</div>
+          <div class="chain-foot">Source of truth</div>
+        </div>
+        <div class="link"><span>Attestcoin proof</span></div>
+        <div class="chain dest">
+          <div class="chain-label">Destination chain</div>
+          <div class="chain-name">Creditcoin CC3</div>
+          <div class="chain-item"><i></i> Precompile verified</div>
+          <div class="chain-item"><i></i> Replay guarded</div>
+          <div class="chain-foot">Verified claim</div>
+        </div>
+      </div>
+      <div class="checks">
+        <span>Merkle inclusion</span>
+        <span>Continuity</span>
+        <span>Replay guard</span>
+      </div>
+      <div class="receipt">
+        <b>VerifiedShare receipt</b>
+        <span>Borrow CUSD against it</span>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
