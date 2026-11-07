@@ -1,0 +1,3 @@
+# Compiled frontend bundle (single-file build). Excluded from language stats
+# so the Solidity contracts and TypeScript server are what the repo reports.
+frontend/index.html linguist-generated
